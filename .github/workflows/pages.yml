@@ -1,0 +1,45 @@
+name: Publicar sitio en GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inyectar configuración de Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || vars.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY || vars.SUPABASE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Faltan los secretos SUPABASE_URL y/o SUPABASE_KEY en Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          sed -i "s|__SUPABASE_URL__|${SUPABASE_URL}|g; s|__SUPABASE_KEY__|${SUPABASE_KEY}|g" apoderados/index.html
+          grep -q "__SUPABASE_" apoderados/index.html && { echo "::error::No se reemplazaron los marcadores"; exit 1; } || true
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

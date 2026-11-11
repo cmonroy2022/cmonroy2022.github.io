@@ -60,10 +60,9 @@
 </main>
 
 <script type="module">
-  // ====== CONFIGURA AQUÍ (Supabase → Project Settings → API) ======
-  const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
-  const SUPABASE_KEY = "TU_ANON_O_PUBLISHABLE_KEY";
-  // ================================================================
+  // GitHub Actions reemplaza estos marcadores con los secretos SUPABASE_URL y SUPABASE_KEY al publicar
+  const SUPABASE_URL = "__SUPABASE_URL__";
+  const SUPABASE_KEY = "__SUPABASE_KEY__";
 
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -110,6 +109,12 @@
 
     const datos = validar(form);
     if (!datos) return;
+
+    if (SUPABASE_URL.startsWith("__")) {
+      estado.textContent = "El formulario aún no está configurado.";
+      estado.className = "estado error";
+      return;
+    }
 
     btn.disabled = true; btn.textContent = "Enviando…";
     const { error } = await supabase.from("apoderados").insert(datos);

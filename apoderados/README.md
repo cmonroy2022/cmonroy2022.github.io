@@ -7,8 +7,14 @@
    - **Project URL**
    - **anon / publishable key** (NUNCA la `service_role` / secret key)
 
-## 2. Configura el formulario
-Abre `index.html` y reemplaza `SUPABASE_URL` y `SUPABASE_KEY` (arriba del `<script>`).
+## 2. Configura el formulario (secretos de GitHub)
+En el repo: **Settings → Secrets and variables → Actions → New repository secret**:
+- `SUPABASE_URL`
+- `SUPABASE_KEY` (anon/publishable)
+
+Y en **Settings → Pages → Build and deployment → Source** elige **GitHub Actions**.
+El workflow `.github/workflows/pages.yml` reemplaza `__SUPABASE_URL__` y `__SUPABASE_KEY__` al publicar.
+La clave queda visible en la página publicada (así funciona cualquier frontend); por eso solo se usa la clave pública.
 
 ## 3. Publicación (GitHub Pages)
 El formulario vive en https://cmonroy2022.github.io/apoderados/
