@@ -3,80 +3,282 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Registro de apoderados</title>
+<title>Ficha de apoderados · Jardín Infantil Los Folkloristas</title>
+<meta name="description" content="Ficha de apoderados de la Sala Cuna y Jardín Infantil Los Folkloristas, Temuco.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root { --c:#1f4e78; --err:#c0392b; --ok:#1e8449; }
+  /* Paleta tomada de las salas del jardín: muros verde limón, cielo de Temuco, copihue, sol de papel lustre */
+  :root {
+    --cielo: #e6f3fb;
+    --cielo-hondo: #2f80c8;
+    --pasto: #7cbf3a;
+    --pasto-hondo: #3f8a2b;
+    --copihue: #d7263d;
+    --sol: #ffc93c;
+    --tinta: #1d2b4f;
+    --papel: #ffffff;
+    --gris: #5b6680;
+    --radio: 18px;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-         background:#f2f5f9; color:#222; display:flex; justify-content:center; padding:24px 16px; }
-  .card { background:#fff; width:100%; max-width:460px; border-radius:14px;
-          box-shadow:0 4px 20px rgba(0,0,0,.08); padding:28px 24px; }
-  h1 { margin:0 0 4px; font-size:1.4rem; color:var(--c); }
-  p.sub { margin:0 0 22px; color:#666; font-size:.95rem; }
-  label { display:block; font-weight:600; font-size:.92rem; margin:16px 0 6px; }
-  label small { font-weight:400; color:#888; }
-  input { width:100%; padding:12px; font-size:1rem; border:1px solid #ccd3dc; border-radius:8px; }
-  input:focus { outline:none; border-color:var(--c); box-shadow:0 0 0 3px rgba(31,78,120,.15); }
-  input.bad { border-color:var(--err); }
-  .msg-campo { color:var(--err); font-size:.82rem; margin-top:4px; min-height:1em; }
-  .hp { position:absolute; left:-9999px; }
-  fieldset { border:1px solid #e1e6ec; border-radius:10px; padding:4px 14px 14px; margin:22px 0 0; }
-  legend { font-weight:600; font-size:.92rem; padding:0 6px; color:var(--c); }
-  .check { display:flex; align-items:center; gap:10px; font-weight:500; margin:14px 0 6px; cursor:pointer; }
-  .check input { width:20px; height:20px; margin:0; accent-color:var(--c); }
-  .detalle[hidden] { display:none; }
-  button { margin-top:24px; width:100%; padding:14px; font-size:1rem; font-weight:600;
-           background:var(--c); color:#fff; border:0; border-radius:8px; cursor:pointer; }
-  button:disabled { opacity:.6; cursor:wait; }
-  .estado { margin-top:16px; padding:12px; border-radius:8px; font-size:.95rem; display:none; }
-  .estado.ok { display:block; background:#e8f6ee; color:var(--ok); }
-  .estado.error { display:block; background:#fdecea; color:var(--err); }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--cielo);
+    color: var(--tinta);
+    font: 400 1.0625rem/1.55 "Atkinson Hyperlegible", system-ui, sans-serif;
+  }
+
+  /* ---------- Escena de papel recortado ---------- */
+  .escena { position: relative; max-width: 720px; margin: 0 auto; }
+  .escena svg { display: block; width: 100%; height: auto; }
+  .papel-sombra { filter: drop-shadow(0 3px 0 rgba(29,43,79,.18)); }
+
+  .titulo { text-align: center; padding: 28px 20px 0; }
+  .escena svg { margin-top: -6px; }
+  .titulo p {
+    margin: 0 0 4px;
+    font: 600 clamp(.95rem, 3.6vw, 1.15rem)/1.2 "Grandstander", cursive;
+    color: var(--cielo-hondo);
+  }
+  .titulo h1 {
+    margin: 0;
+    font: 800 clamp(2rem, 9vw, 3.4rem)/1 "Grandstander", cursive;
+    letter-spacing: -.01em;
+    color: var(--tinta);
+    text-shadow: 3px 3px 0 var(--sol);
+  }
+
+  /* ---------- Hoja del formulario ---------- */
+  main {
+    position: relative;
+    max-width: 560px;
+    margin: -28px auto 48px;
+    padding: 0 16px;
+  }
+  .hoja {
+    background: var(--papel);
+    border: 2px solid var(--tinta);
+    border-radius: var(--radio);
+    box-shadow: 6px 6px 0 var(--pasto);
+    padding: 28px 22px 26px;
+  }
+  .intro { margin: 0 0 6px; font-size: 1.05rem; }
+  .nota { margin: 0 0 8px; color: var(--gris); font-size: .95rem; }
+
+  .campo { margin-top: 20px; }
+  label.etq { display: block; font-weight: 700; margin-bottom: 6px; }
+  label.etq .opc { font-weight: 400; color: var(--gris); }
+  input[type="text"], input[type="tel"], input[type="email"] {
+    width: 100%;
+    padding: 13px 14px;
+    font: inherit;
+    color: var(--tinta);
+    background: #fbfdff;
+    border: 2px solid #c7d3e3;
+    border-radius: 12px;
+    transition: border-color .15s;
+  }
+  input::placeholder { color: #98a3b8; }
+  input:focus { outline: none; border-color: var(--cielo-hondo); background: #fff; }
+  input:focus-visible { box-shadow: 0 0 0 3px rgba(47,128,200,.25); }
+  input.mal { border-color: var(--copihue); }
+  .error { color: var(--copihue); font-size: .9rem; margin-top: 5px; min-height: 0; }
+  .error:empty { display: none; }
+
+  /* ---------- Donaciones ---------- */
+  fieldset { border: 0; padding: 0; margin: 30px 0 0; }
+  legend {
+    padding: 0;
+    font: 800 1.35rem/1.2 "Grandstander", cursive;
+  }
+  .ayuda { margin: 4px 0 14px; color: var(--gris); font-size: .95rem; }
+  .opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .opcion { position: relative; }
+  .opcion input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .ficha {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 16px 10px 14px;
+    border: 2px dashed #b9c6d8;
+    border-radius: 14px;
+    text-align: center; font-weight: 700;
+    transition: transform .15s, border-color .15s, background .15s;
+  }
+  .ficha svg { width: 46px; height: 46px; }
+  .opcion input:checked + .ficha {
+    border-style: solid; border-color: var(--tinta);
+    background: #fff8e1;
+    transform: rotate(-1.5deg);
+  }
+  .opcion:nth-child(2) input:checked + .ficha { background: #eaf6dd; transform: rotate(1.5deg); }
+  .opcion input:focus-visible + .ficha { box-shadow: 0 0 0 3px rgba(47,128,200,.35); }
+  .marca { font-weight: 400; font-size: .85rem; color: var(--gris); }
+  .opcion input:checked + .ficha .marca { color: var(--pasto-hondo); font-weight: 700; }
+
+  .detalle { margin-top: 14px; }
+  .detalle[hidden] { display: none; }
+
+  .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  button {
+    margin-top: 28px; width: 100%;
+    padding: 15px 18px;
+    font: 800 1.2rem/1 "Grandstander", cursive;
+    color: var(--tinta);
+    background: var(--sol);
+    border: 2px solid var(--tinta);
+    border-radius: 14px;
+    box-shadow: 0 4px 0 var(--tinta);
+    cursor: pointer;
+    transition: transform .08s, box-shadow .08s;
+  }
+  button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tinta); }
+  button:focus-visible { outline: 3px solid var(--cielo-hondo); outline-offset: 3px; }
+  button:disabled { opacity: .65; cursor: wait; }
+
+  .estado { margin-top: 16px; padding: 12px 14px; border-radius: 12px; font-weight: 700; }
+  .estado:empty { display: none; }
+  .estado.ok { background: #eaf6dd; color: var(--pasto-hondo); }
+  .estado.mal { background: #fde8ea; color: var(--copihue); }
+
+  /* ---------- Pantalla de gracias ---------- */
+  .gracias { text-align: center; padding: 8px 0 4px; }
+  .gracias[hidden] { display: none; }
+  .gracias h2 { margin: 6px 0 8px; font: 800 2rem/1.1 "Grandstander", cursive; }
+  .gracias p { margin: 0 auto; max-width: 36ch; }
+  .gracias button { background: #fff; box-shadow: 0 4px 0 var(--pasto); }
+
+  footer { text-align: center; color: var(--gris); font-size: .9rem; padding: 0 16px 32px; }
+  footer a { color: var(--cielo-hondo); }
+
+  /* Hojitas que caen al enviar (único momento animado) */
+  .hojita { position: fixed; top: -30px; width: 16px; height: 22px; border-radius: 0 100% 0 100%; pointer-events: none; z-index: 10;
+            animation: caer 2.6s cubic-bezier(.3,.6,.5,1) forwards; }
+  @keyframes caer { to { transform: translate(var(--dx), 105vh) rotate(var(--r)); opacity: .9; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hojita { display: none; }
+    * { transition: none !important; }
+  }
+  @media (min-width: 600px) { .hoja { padding: 36px 36px 32px; } }
 </style>
 </head>
 <body>
-<main class="card">
-  <h1>Registro de apoderados</h1>
-  <p class="sub">Completa tus datos. Los campos con * son obligatorios.</p>
 
-  <form id="form" novalidate>
-    <label for="nombre_apoderado">Nombre del apoderado *</label>
-    <input id="nombre_apoderado" name="nombre_apoderado" autocomplete="name" maxlength="120" required>
-    <div class="msg-campo" data-for="nombre_apoderado"></div>
+<header class="escena">
+  <div class="titulo">
+    <p>Sala Cuna y Jardín Infantil Los Folkloristas</p>
+    <h1>Ficha de apoderados</h1>
+  </div>
+  <!-- Cerros de papel con el volcán Llaima, sol y copihues -->
+  <svg viewBox="0 0 720 300" role="img" aria-label="Paisaje de papel recortado: sol, volcán y cerros verdes con copihues">
+    <circle class="papel-sombra" cx="610" cy="78" r="42" fill="#ffc93c"/>
+    <g class="papel-sombra" fill="#ffffff" opacity=".9">
+      <path d="M70 120c0-14 12-24 26-22 6-12 24-14 32-3 14-2 24 8 22 22H70z"/>
+      <path d="M440 70c0-10 9-18 19-16 5-9 18-10 24-2 10-1 18 6 16 18h-59z"/>
+    </g>
+    <path class="papel-sombra" d="M250 250 L355 112 L372 104 L388 112 L500 250 Z" fill="#8a9bb8"/>
+    <path d="M335 138 L355 112 L372 104 L388 112 L408 138 L392 132 L380 142 L366 130 L352 142 Z" fill="#ffffff"/>
+    <path class="papel-sombra" d="M0 240 C90 175 180 175 280 222 C380 268 470 190 560 196 C640 200 690 225 720 238 V300 H0 Z" fill="#a6d65a"/>
+    <path class="papel-sombra" d="M0 270 C120 228 230 240 330 262 C450 290 560 236 720 258 V300 H0 Z" fill="#7cbf3a"/>
+    <g class="papel-sombra">
+      <path d="M40 300 V258" stroke="#3f8a2b" stroke-width="4"/>
+      <path d="M40 262 c-14 -4 -18 -18 -14 -30 c8 6 14 14 14 30z" fill="#3f8a2b"/>
+      <path d="M674 300 V250" stroke="#3f8a2b" stroke-width="4"/>
+      <path d="M674 256 c14 -6 20 -20 14 -32 c-8 6 -14 14 -14 32z" fill="#3f8a2b"/>
+    </g>
+    <!-- copihues colgando -->
+    <g class="papel-sombra">
+      <path d="M0 8 C40 30 70 30 120 18" stroke="#3f8a2b" stroke-width="4" fill="none"/>
+      <path d="M48 26 c-10 6 -14 22 -8 34 l8 -4 8 4 c6 -12 2 -28 -8 -34z" fill="#d7263d"/>
+      <path d="M94 25 c-9 5 -12 19 -7 30 l7 -3 7 3 c5 -11 2 -25 -7 -30z" fill="#d7263d"/>
+      <path d="M720 10 C680 32 650 30 610 20" stroke="#3f8a2b" stroke-width="4" fill="none"/>
+      <path d="M668 28 c-10 6 -14 22 -8 34 l8 -4 8 4 c6 -12 2 -28 -8 -34z" fill="#d7263d"/>
+    </g>
+  </svg>
+</header>
 
-    <label for="nombre_hijo">Nombre del hijo/a *</label>
-    <input id="nombre_hijo" name="nombre_hijo" maxlength="120" required>
-    <div class="msg-campo" data-for="nombre_hijo"></div>
+<main>
+  <section class="hoja">
+    <form id="form" novalidate>
+      <p class="intro">Hola, familia. Déjennos sus datos para mantenernos en contacto durante el año.</p>
+      <p class="nota">Los campos marcados como opcionales pueden quedar en blanco.</p>
 
-    <label for="telefono">Teléfono *</label>
-    <input id="telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel"
-           placeholder="+56 9 1234 5678" required>
-    <div class="msg-campo" data-for="telefono"></div>
-
-    <label for="correo">Correo <small>(opcional)</small></label>
-    <input id="correo" name="correo" type="email" inputmode="email" autocomplete="email" maxlength="160">
-    <div class="msg-campo" data-for="correo"></div>
-
-    <fieldset>
-      <legend>Donaciones <small style="font-weight:400;color:#888">(opcional)</small></legend>
-
-      <label class="check"><input type="checkbox" id="dona_alimento"> Donación de alimento</label>
-      <div class="detalle" id="det_alimento" hidden>
-        <input id="detalle_alimento" maxlength="300" placeholder="¿Qué alimento? Ej: 2 kg de arroz, leche">
+      <div class="campo">
+        <label class="etq" for="nombre_apoderado">Tu nombre</label>
+        <input type="text" id="nombre_apoderado" autocomplete="name" maxlength="120" placeholder="Nombre y apellido">
+        <div class="error" data-for="nombre_apoderado"></div>
       </div>
 
-      <label class="check"><input type="checkbox" id="dona_material"> Donación de material</label>
-      <div class="detalle" id="det_material" hidden>
-        <input id="detalle_material" maxlength="300" placeholder="¿Qué material? Ej: cuadernos, lápices">
+      <div class="campo">
+        <label class="etq" for="nombre_hijo">Nombre de tu hijo o hija</label>
+        <input type="text" id="nombre_hijo" maxlength="120" placeholder="Nombre y apellido">
+        <div class="error" data-for="nombre_hijo"></div>
       </div>
-    </fieldset>
 
-    <!-- Campo trampa anti-spam: las personas no lo ven -->
-    <input class="hp" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="campo">
+        <label class="etq" for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" inputmode="tel" autocomplete="tel" placeholder="+56 9 1234 5678">
+        <div class="error" data-for="telefono"></div>
+      </div>
 
-    <button type="submit" id="btn">Enviar</button>
-    <div id="estado" class="estado" role="status"></div>
-  </form>
+      <div class="campo">
+        <label class="etq" for="correo">Correo <span class="opc">(opcional)</span></label>
+        <input type="email" id="correo" inputmode="email" autocomplete="email" maxlength="160" placeholder="nombre@correo.cl">
+        <div class="error" data-for="correo"></div>
+      </div>
+
+      <fieldset>
+        <legend>¿Quieres aportar con algo?</legend>
+        <p class="ayuda">Opcional. Marca lo que puedas donar y cuéntanos qué.</p>
+        <div class="opciones">
+          <label class="opcion">
+            <input type="checkbox" id="dona_alimento">
+            <span class="ficha">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 22h36c0 11-8 18-18 18S6 33 6 22z" fill="#ffc93c" stroke="#1d2b4f" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 16c0-4 4-4 4-8M24 16c0-4 4-4 4-8" stroke="#d7263d" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+              Alimento
+              <span class="marca">Toca para elegir</span>
+            </span>
+          </label>
+          <label class="opcion">
+            <input type="checkbox" id="dona_material">
+            <span class="ficha">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="10" width="22" height="30" rx="3" fill="#7cbf3a" stroke="#1d2b4f" stroke-width="2.5"/><path d="M34 38 L40 12 L44 13 L38 39 L34 41 Z" fill="#2f80c8" stroke="#1d2b4f" stroke-width="2.5" stroke-linejoin="round"/><path d="M13 18h12M13 24h12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+              Material
+              <span class="marca">Toca para elegir</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="detalle" id="det_alimento" hidden>
+          <label class="etq" for="detalle_alimento">¿Qué alimento? <span class="opc">(opcional)</span></label>
+          <input type="text" id="detalle_alimento" maxlength="300" placeholder="Ej: 2 kg de arroz, leche">
+        </div>
+        <div class="detalle" id="det_material" hidden>
+          <label class="etq" for="detalle_material">¿Qué material? <span class="opc">(opcional)</span></label>
+          <input type="text" id="detalle_material" maxlength="300" placeholder="Ej: papel lustre, témperas">
+        </div>
+      </fieldset>
+
+      <div class="trampa" aria-hidden="true"><input type="text" id="sitio_web" tabindex="-1" autocomplete="off"></div>
+
+      <button type="submit" id="btn">Enviar ficha</button>
+      <div id="estado" class="estado" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="gracias" id="gracias" hidden tabindex="-1">
+      <svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><path d="M32 8c-10 6-14 26-8 40l8-4 8 4c6-14 2-34-8-40z" fill="#d7263d" stroke="#1d2b4f" stroke-width="2.5" stroke-linejoin="round"/><path d="M32 8V2" stroke="#3f8a2b" stroke-width="3" stroke-linecap="round"/></svg>
+      <h2>¡Ficha enviada!</h2>
+      <p>Gracias, familia. Ya tenemos sus datos.</p>
+      <button type="button" id="otra">Enviar otra ficha</button>
+    </div>
+  </section>
 </main>
+
+<footer>
+  Jardín Infantil Los Folkloristas, Temuco. <a href="https://www.instagram.com/los_folkloristas_temuco/">Instagram</a>
+</footer>
 
 <script type="module">
   // GitHub Actions reemplaza estos marcadores con los secretos SUPABASE_URL y SUPABASE_KEY al publicar
@@ -84,84 +286,109 @@
   const SUPABASE_KEY = "__SUPABASE_KEY__";
 
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const supabase = createClient(SUPABASE_URL.startsWith("__") ? "https://example.supabase.co" : SUPABASE_URL, SUPABASE_KEY);
 
-  const form = document.getElementById("form");
-  const btn = document.getElementById("btn");
-  const estado = document.getElementById("estado");
   const $ = (id) => document.getElementById(id);
+  const form = $("form"), btn = $("btn"), estado = $("estado");
 
-  // Muestra el detalle solo si se marca la donación
   function syncDonaciones() {
-    $("det_alimento").hidden = !$("dona_alimento").checked;
-    $("det_material").hidden = !$("dona_material").checked;
+    for (const k of ["alimento", "material"]) {
+      const on = $("dona_" + k).checked;
+      $("det_" + k).hidden = !on;
+      $("dona_" + k).nextElementSibling.querySelector(".marca").textContent = on ? "Elegido" : "Toca para elegir";
+    }
   }
   $("dona_alimento").addEventListener("change", syncDonaciones);
   $("dona_material").addEventListener("change", syncDonaciones);
-  form.addEventListener("reset", () => setTimeout(syncDonaciones));
 
-  // Normaliza teléfonos chilenos: "9 1234 5678" -> "+56912345678"
+  // Números chilenos (celular o fijo) tienen 9 dígitos: "9 1234 5678" -> "+56912345678"
   function normalizarTelefono(v) {
     let d = v.replace(/[^\d]/g, "");
-    if (d.length === 9) d = "56" + d; // números chilenos (celular o fijo) tienen 9 dígitos
+    if (d.length === 9) d = "56" + d;
     return d.length >= 8 && d.length <= 15 ? "+" + d : null;
   }
 
-  function setError(campo, texto) {
+  function marcar(campo, texto) {
     document.querySelector(`[data-for="${campo}"]`).textContent = texto || "";
-    document.getElementById(campo).classList.toggle("bad", !!texto);
+    $(campo).classList.toggle("mal", !!texto);
+    $(campo).setAttribute("aria-invalid", texto ? "true" : "false");
   }
 
-  function validar(f) {
-    let ok = true;
+  function validar() {
+    const v = (id) => $(id).value.trim();
     const datos = {
-      nombre_apoderado: f.nombre_apoderado.value.trim(),
-      nombre_hijo: f.nombre_hijo.value.trim(),
-      telefono: normalizarTelefono(f.telefono.value),
-      correo: f.correo.value.trim() || null,
+      nombre_apoderado: v("nombre_apoderado"),
+      nombre_hijo: v("nombre_hijo"),
+      telefono: normalizarTelefono($("telefono").value),
+      correo: v("correo") || null,
       dona_alimento: $("dona_alimento").checked,
-      detalle_alimento: $("dona_alimento").checked ? ($("detalle_alimento").value.trim() || null) : null,
+      detalle_alimento: $("dona_alimento").checked ? (v("detalle_alimento") || null) : null,
       dona_material: $("dona_material").checked,
-      detalle_material: $("dona_material").checked ? ($("detalle_material").value.trim() || null) : null,
+      detalle_material: $("dona_material").checked ? (v("detalle_material") || null) : null,
     };
-    ["nombre_apoderado","nombre_hijo","telefono","correo"].forEach(c => setError(c, ""));
+    const errores = {
+      nombre_apoderado: datos.nombre_apoderado.length < 3 ? "Escribe tu nombre y apellido." : "",
+      nombre_hijo: datos.nombre_hijo.length < 2 ? "Escribe el nombre de tu hijo o hija." : "",
+      telefono: !datos.telefono ? "Revisa el teléfono. Ejemplo: +56 9 1234 5678." : "",
+      correo: datos.correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.correo) ? "Revisa el correo o déjalo en blanco." : "",
+    };
+    let primero = null;
+    for (const [c, t] of Object.entries(errores)) { marcar(c, t); if (t && !primero) primero = c; }
+    if (primero) { $(primero).focus(); return null; }
+    return datos;
+  }
 
-    if (datos.nombre_apoderado.length < 3) { setError("nombre_apoderado", "Ingresa el nombre completo."); ok = false; }
-    if (datos.nombre_hijo.length < 2)      { setError("nombre_hijo", "Ingresa el nombre del hijo/a."); ok = false; }
-    if (!datos.telefono)                    { setError("telefono", "Ingresa un teléfono válido, ej: +56 9 1234 5678."); ok = false; }
-    if (datos.correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.correo)) {
-      setError("correo", "El correo no parece válido."); ok = false;
+  function hojitas() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const colores = ["#7cbf3a", "#ffc93c", "#d7263d", "#2f80c8", "#a6d65a"];
+    for (let i = 0; i < 28; i++) {
+      const h = document.createElement("span");
+      h.className = "hojita";
+      h.style.left = Math.random() * 100 + "vw";
+      h.style.background = colores[i % colores.length];
+      h.style.setProperty("--dx", (Math.random() * 120 - 60) + "px");
+      h.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+      h.style.animationDelay = Math.random() * .6 + "s";
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 3500);
     }
-    return ok ? datos : null;
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    estado.className = "estado";
-    if (form.sitio_web.value) return; // bot
+    estado.textContent = ""; estado.className = "estado";
+    if ($("sitio_web").value) return; // bot
 
-    const datos = validar(form);
+    const datos = validar();
     if (!datos) return;
 
     if (SUPABASE_URL.startsWith("__")) {
-      estado.textContent = "El formulario aún no está configurado.";
-      estado.className = "estado error";
+      estado.textContent = "El formulario aún no está conectado. Avísale al jardín.";
+      estado.className = "estado mal";
       return;
     }
 
-    btn.disabled = true; btn.textContent = "Enviando…";
+    btn.disabled = true; btn.textContent = "Enviando ficha…";
     const { error } = await supabase.from("apoderados").insert(datos);
-    btn.disabled = false; btn.textContent = "Enviar";
+    btn.disabled = false; btn.textContent = "Enviar ficha";
 
     if (error) {
       console.error(error);
-      estado.textContent = "No se pudo guardar. Intenta de nuevo en unos minutos.";
-      estado.className = "estado error";
-    } else {
-      form.reset();
-      estado.textContent = "¡Listo! Tus datos quedaron registrados.";
-      estado.className = "estado ok";
+      estado.textContent = "No se pudo enviar la ficha. Revisa tu conexión e inténtalo otra vez.";
+      estado.className = "estado mal";
+      return;
     }
+    form.reset(); syncDonaciones();
+    form.hidden = true;
+    $("gracias").hidden = false;
+    $("gracias").focus();
+    hojitas();
+  });
+
+  $("otra").addEventListener("click", () => {
+    $("gracias").hidden = true;
+    form.hidden = false;
+    $("nombre_apoderado").focus();
   });
 </script>
 </body>
