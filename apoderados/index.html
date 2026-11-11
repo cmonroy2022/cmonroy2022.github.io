@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de apoderados</title>
+<style>
+  :root { --c:#1f4e78; --err:#c0392b; --ok:#1e8449; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+         background:#f2f5f9; color:#222; display:flex; justify-content:center; padding:24px 16px; }
+  .card { background:#fff; width:100%; max-width:460px; border-radius:14px;
+          box-shadow:0 4px 20px rgba(0,0,0,.08); padding:28px 24px; }
+  h1 { margin:0 0 4px; font-size:1.4rem; color:var(--c); }
+  p.sub { margin:0 0 22px; color:#666; font-size:.95rem; }
+  label { display:block; font-weight:600; font-size:.92rem; margin:16px 0 6px; }
+  label small { font-weight:400; color:#888; }
+  input { width:100%; padding:12px; font-size:1rem; border:1px solid #ccd3dc; border-radius:8px; }
+  input:focus { outline:none; border-color:var(--c); box-shadow:0 0 0 3px rgba(31,78,120,.15); }
+  input.bad { border-color:var(--err); }
+  .msg-campo { color:var(--err); font-size:.82rem; margin-top:4px; min-height:1em; }
+  .hp { position:absolute; left:-9999px; }
+  button { margin-top:24px; width:100%; padding:14px; font-size:1rem; font-weight:600;
+           background:var(--c); color:#fff; border:0; border-radius:8px; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:wait; }
+  .estado { margin-top:16px; padding:12px; border-radius:8px; font-size:.95rem; display:none; }
+  .estado.ok { display:block; background:#e8f6ee; color:var(--ok); }
+  .estado.error { display:block; background:#fdecea; color:var(--err); }
+</style>
+</head>
+<body>
+<main class="card">
+  <h1>Registro de apoderados</h1>
+  <p class="sub">Completa tus datos. Los campos con * son obligatorios.</p>
+
+  <form id="form" novalidate>
+    <label for="nombre_apoderado">Nombre del apoderado *</label>
+    <input id="nombre_apoderado" name="nombre_apoderado" autocomplete="name" maxlength="120" required>
+    <div class="msg-campo" data-for="nombre_apoderado"></div>
+
+    <label for="nombre_hijo">Nombre del hijo/a *</label>
+    <input id="nombre_hijo" name="nombre_hijo" maxlength="120" required>
+    <div class="msg-campo" data-for="nombre_hijo"></div>
+
+    <label for="telefono">Teléfono *</label>
+    <input id="telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel"
+           placeholder="+56 9 1234 5678" required>
+    <div class="msg-campo" data-for="telefono"></div>
+
+    <label for="correo">Correo <small>(opcional)</small></label>
+    <input id="correo" name="correo" type="email" inputmode="email" autocomplete="email" maxlength="160">
+    <div class="msg-campo" data-for="correo"></div>
+
+    <!-- Campo trampa anti-spam: las personas no lo ven -->
+    <input class="hp" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+    <button type="submit" id="btn">Enviar</button>
+    <div id="estado" class="estado" role="status"></div>
+  </form>
+</main>
+
+<script type="module">
+  // ====== CONFIGURA AQUÍ (Supabase → Project Settings → API) ======
+  const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
+  const SUPABASE_KEY = "TU_ANON_O_PUBLISHABLE_KEY";
+  // ================================================================
+
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const form = document.getElementById("form");
+  const btn = document.getElementById("btn");
+  const estado = document.getElementById("estado");
+
+  // Normaliza teléfonos chilenos: "9 1234 5678" -> "+56912345678"
+  function normalizarTelefono(v) {
+    let d = v.replace(/[^\d]/g, "");
+    if (d.length === 9) d = "56" + d; // números chilenos (celular o fijo) tienen 9 dígitos
+    return d.length >= 8 && d.length <= 15 ? "+" + d : null;
+  }
+
+  function setError(campo, texto) {
+    document.querySelector(`[data-for="${campo}"]`).textContent = texto || "";
+    document.getElementById(campo).classList.toggle("bad", !!texto);
+  }
+
+  function validar(f) {
+    let ok = true;
+    const datos = {
+      nombre_apoderado: f.nombre_apoderado.value.trim(),
+      nombre_hijo: f.nombre_hijo.value.trim(),
+      telefono: normalizarTelefono(f.telefono.value),
+      correo: f.correo.value.trim() || null,
+    };
+    ["nombre_apoderado","nombre_hijo","telefono","correo"].forEach(c => setError(c, ""));
+
+    if (datos.nombre_apoderado.length < 3) { setError("nombre_apoderado", "Ingresa el nombre completo."); ok = false; }
+    if (datos.nombre_hijo.length < 2)      { setError("nombre_hijo", "Ingresa el nombre del hijo/a."); ok = false; }
+    if (!datos.telefono)                    { setError("telefono", "Ingresa un teléfono válido, ej: +56 9 1234 5678."); ok = false; }
+    if (datos.correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.correo)) {
+      setError("correo", "El correo no parece válido."); ok = false;
+    }
+    return ok ? datos : null;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    estado.className = "estado";
+    if (form.sitio_web.value) return; // bot
+
+    const datos = validar(form);
+    if (!datos) return;
+
+    btn.disabled = true; btn.textContent = "Enviando…";
+    const { error } = await supabase.from("apoderados").insert(datos);
+    btn.disabled = false; btn.textContent = "Enviar";
+
+    if (error) {
+      console.error(error);
+      estado.textContent = "No se pudo guardar. Intenta de nuevo en unos minutos.";
+      estado.className = "estado error";
+    } else {
+      form.reset();
+      estado.textContent = "¡Listo! Tus datos quedaron registrados.";
+      estado.className = "estado ok";
+    }
+  });
+</script>
+</body>
+</html>
