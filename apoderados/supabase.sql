@@ -10,6 +10,13 @@ create table if not exists public.apoderados (
   creado_en        timestamptz not null default now()
 );
 
+-- Donaciones (si ya creaste la tabla antes, basta con correr este bloque)
+alter table public.apoderados
+  add column if not exists dona_alimento    boolean not null default false,
+  add column if not exists detalle_alimento text check (char_length(detalle_alimento) <= 300),
+  add column if not exists dona_material    boolean not null default false,
+  add column if not exists detalle_material text check (char_length(detalle_material) <= 300);
+
 -- Seguridad: el público solo puede INSERTAR, nunca leer, editar ni borrar
 alter table public.apoderados enable row level security;
 

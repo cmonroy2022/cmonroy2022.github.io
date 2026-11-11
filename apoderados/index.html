@@ -20,6 +20,11 @@
   input.bad { border-color:var(--err); }
   .msg-campo { color:var(--err); font-size:.82rem; margin-top:4px; min-height:1em; }
   .hp { position:absolute; left:-9999px; }
+  fieldset { border:1px solid #e1e6ec; border-radius:10px; padding:4px 14px 14px; margin:22px 0 0; }
+  legend { font-weight:600; font-size:.92rem; padding:0 6px; color:var(--c); }
+  .check { display:flex; align-items:center; gap:10px; font-weight:500; margin:14px 0 6px; cursor:pointer; }
+  .check input { width:20px; height:20px; margin:0; accent-color:var(--c); }
+  .detalle[hidden] { display:none; }
   button { margin-top:24px; width:100%; padding:14px; font-size:1rem; font-weight:600;
            background:var(--c); color:#fff; border:0; border-radius:8px; cursor:pointer; }
   button:disabled { opacity:.6; cursor:wait; }
@@ -51,6 +56,20 @@
     <input id="correo" name="correo" type="email" inputmode="email" autocomplete="email" maxlength="160">
     <div class="msg-campo" data-for="correo"></div>
 
+    <fieldset>
+      <legend>Donaciones <small style="font-weight:400;color:#888">(opcional)</small></legend>
+
+      <label class="check"><input type="checkbox" id="dona_alimento"> Donación de alimento</label>
+      <div class="detalle" id="det_alimento" hidden>
+        <input id="detalle_alimento" maxlength="300" placeholder="¿Qué alimento? Ej: 2 kg de arroz, leche">
+      </div>
+
+      <label class="check"><input type="checkbox" id="dona_material"> Donación de material</label>
+      <div class="detalle" id="det_material" hidden>
+        <input id="detalle_material" maxlength="300" placeholder="¿Qué material? Ej: cuadernos, lápices">
+      </div>
+    </fieldset>
+
     <!-- Campo trampa anti-spam: las personas no lo ven -->
     <input class="hp" name="sitio_web" tabindex="-1" autocomplete="off" aria-hidden="true">
 
@@ -70,6 +89,16 @@
   const form = document.getElementById("form");
   const btn = document.getElementById("btn");
   const estado = document.getElementById("estado");
+  const $ = (id) => document.getElementById(id);
+
+  // Muestra el detalle solo si se marca la donación
+  function syncDonaciones() {
+    $("det_alimento").hidden = !$("dona_alimento").checked;
+    $("det_material").hidden = !$("dona_material").checked;
+  }
+  $("dona_alimento").addEventListener("change", syncDonaciones);
+  $("dona_material").addEventListener("change", syncDonaciones);
+  form.addEventListener("reset", () => setTimeout(syncDonaciones));
 
   // Normaliza teléfonos chilenos: "9 1234 5678" -> "+56912345678"
   function normalizarTelefono(v) {
@@ -90,6 +119,10 @@
       nombre_hijo: f.nombre_hijo.value.trim(),
       telefono: normalizarTelefono(f.telefono.value),
       correo: f.correo.value.trim() || null,
+      dona_alimento: $("dona_alimento").checked,
+      detalle_alimento: $("dona_alimento").checked ? ($("detalle_alimento").value.trim() || null) : null,
+      dona_material: $("dona_material").checked,
+      detalle_material: $("dona_material").checked ? ($("detalle_material").value.trim() || null) : null,
     };
     ["nombre_apoderado","nombre_hijo","telefono","correo"].forEach(c => setError(c, ""));
 
