@@ -117,8 +117,24 @@
   .marca { font-weight: 400; font-size: .85rem; color: var(--gris); }
   .opcion input:checked + .ficha .marca { color: var(--pasto-hondo); font-weight: 700; }
 
-  .detalle { margin-top: 14px; }
-  .detalle[hidden] { display: none; }
+  /* Lista de materiales que faltan */
+  .materiales { margin-top: 18px; }
+  .materiales[hidden] { display: none; }
+  .materiales h3 { margin: 0 0 2px; font: 800 1.1rem/1.3 "Grandstander", cursive; }
+  .lista { list-style: none; margin: 10px 0 0; padding: 0; border-top: 2px dotted #c7d3e3; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 11px 2px; border-bottom: 2px dotted #c7d3e3; }
+  .item input[type="checkbox"] { width: 22px; height: 22px; margin: 0; flex: none; accent-color: var(--pasto-hondo); }
+  .item label { flex: 1; cursor: pointer; line-height: 1.3; }
+  .item .quedan { display: block; font-size: .88rem; color: var(--gris); }
+  .item select {
+    font: inherit; font-weight: 700; color: var(--tinta);
+    padding: 6px 8px; border: 2px solid var(--tinta); border-radius: 10px; background: #fff8e1;
+  }
+  .item select[hidden] { display: none; }
+  .item.elegido label { font-weight: 700; }
+  .vacio, .cargando { margin: 12px 0 0; padding: 12px 14px; border-radius: 12px; background: #eaf6dd; }
+  .cargando { background: #f1f5fa; color: var(--gris); }
+  .resumen { text-align: left; margin: 14px auto 0; max-width: 36ch; padding-left: 1.2em; }
 
   .trampa { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
@@ -230,34 +246,33 @@
       </div>
 
       <fieldset>
-        <legend>¿Quieres aportar con algo?</legend>
-        <p class="ayuda">Opcional. Marca lo que puedas donar y cuéntanos qué.</p>
+        <legend>¿Cómo puedes colaborar?</legend>
+        <p class="ayuda">Marca una o las dos.</p>
         <div class="opciones">
           <label class="opcion">
-            <input type="checkbox" id="dona_alimento">
+            <input type="checkbox" id="aporte_dinero">
             <span class="ficha">
-              <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 22h36c0 11-8 18-18 18S6 33 6 22z" fill="#ffc93c" stroke="#1d2b4f" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 16c0-4 4-4 4-8M24 16c0-4 4-4 4-8" stroke="#d7263d" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
-              Alimento
+              <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="16" fill="#ffc93c" stroke="#1d2b4f" stroke-width="2.5"/><circle cx="24" cy="24" r="10" fill="none" stroke="#1d2b4f" stroke-width="2" stroke-dasharray="3 3"/><path d="M24 17v14M20.5 20.5c0-2 7-2 7 0.5s-7 2-7 5 7 2.5 7 0.5" stroke="#1d2b4f" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+              Puedo aportar dinero
               <span class="marca">Toca para elegir</span>
             </span>
           </label>
           <label class="opcion">
-            <input type="checkbox" id="dona_material">
+            <input type="checkbox" id="aporte_materiales">
             <span class="ficha">
               <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="10" width="22" height="30" rx="3" fill="#7cbf3a" stroke="#1d2b4f" stroke-width="2.5"/><path d="M34 38 L40 12 L44 13 L38 39 L34 41 Z" fill="#2f80c8" stroke="#1d2b4f" stroke-width="2.5" stroke-linejoin="round"/><path d="M13 18h12M13 24h12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
-              Material
+              Puedo aportar materiales
               <span class="marca">Toca para elegir</span>
             </span>
           </label>
         </div>
 
-        <div class="detalle" id="det_alimento" hidden>
-          <label class="etq" for="detalle_alimento">¿Qué alimento? <span class="opc">(opcional)</span></label>
-          <input type="text" id="detalle_alimento" maxlength="300" placeholder="Ej: 2 kg de arroz, leche">
-        </div>
-        <div class="detalle" id="det_material" hidden>
-          <label class="etq" for="detalle_material">¿Qué material? <span class="opc">(opcional)</span></label>
-          <input type="text" id="detalle_material" maxlength="300" placeholder="Ej: papel lustre, témperas">
+        <div class="materiales" id="bloque_materiales" hidden>
+          <h3>Materiales para el mural</h3>
+          <p class="ayuda">Marca lo que vas a traer. Solo aparece lo que todavía falta.</p>
+          <p class="cargando" id="mat_cargando">Cargando la lista…</p>
+          <ul class="lista" id="lista_materiales"></ul>
+          <div class="error" id="mat_error"></div>
         </div>
       </fieldset>
 
@@ -271,6 +286,7 @@
       <svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><path d="M32 8c-10 6-14 26-8 40l8-4 8 4c6-14 2-34-8-40z" fill="#d7263d" stroke="#1d2b4f" stroke-width="2.5" stroke-linejoin="round"/><path d="M32 8V2" stroke="#3f8a2b" stroke-width="3" stroke-linecap="round"/></svg>
       <h2>¡Ficha enviada!</h2>
       <p>Gracias, familia. Ya tenemos sus datos.</p>
+      <ul class="resumen" id="resumen"></ul>
       <button type="button" id="otra">Enviar otra ficha</button>
     </div>
   </section>
@@ -290,17 +306,97 @@
 
   const $ = (id) => document.getElementById(id);
   const form = $("form"), btn = $("btn"), estado = $("estado");
+  let materiales = [];          // [{id, nombre, unidad, cantidad, restante}]
+  let cargado = false;
 
-  function syncDonaciones() {
-    for (const k of ["alimento", "material"]) {
-      const on = $("dona_" + k).checked;
-      $("det_" + k).hidden = !on;
-      $("dona_" + k).nextElementSibling.querySelector(".marca").textContent = on ? "Elegido" : "Toca para elegir";
+  // ---------- Opciones de aporte ----------
+  function syncOpciones() {
+    for (const id of ["aporte_dinero", "aporte_materiales"]) {
+      $(id).nextElementSibling.querySelector(".marca").textContent = $(id).checked ? "Elegido" : "Toca para elegir";
+    }
+    $("bloque_materiales").hidden = !$("aporte_materiales").checked;
+    if ($("aporte_materiales").checked && !cargado) cargarMateriales();
+  }
+  $("aporte_dinero").addEventListener("change", syncOpciones);
+  $("aporte_materiales").addEventListener("change", syncOpciones);
+
+  // ---------- Lista de materiales ----------
+  const unidadTxt = (m, n) => m.unidad ? `${n} ${m.unidad}` : `${n}`;
+
+  async function cargarMateriales() {
+    const elegidos = leerElegidos();
+    $("mat_cargando").hidden = false;
+    $("mat_cargando").textContent = "Cargando la lista…";
+    const lento = setTimeout(() => { $("mat_cargando").textContent = "La lista está tardando. Revisa tu conexión."; }, 10000);
+    const { data, error } = await supabase.rpc("materiales_disponibles");
+    clearTimeout(lento);
+    if (error) {
+      console.error(error);
+      $("mat_cargando").textContent = "No se pudo cargar la lista de materiales. Recarga la página para intentarlo otra vez.";
+      return;
+    }
+    materiales = data || [];
+    cargado = true;
+    $("mat_cargando").hidden = true;
+    pintarMateriales(elegidos);
+  }
+
+  function pintarMateriales(elegidos = new Map()) {
+    const ul = $("lista_materiales");
+    ul.replaceChildren();
+    if (!materiales.length) {
+      const p = document.createElement("p");
+      p.className = "vacio";
+      p.textContent = "Ya están todos los materiales cubiertos. ¡Gracias! Si quieres, puedes aportar con dinero.";
+      ul.appendChild(p);
+      return;
+    }
+    for (const m of materiales) {
+      const li = document.createElement("li");
+      li.className = "item";
+      const cb = document.createElement("input");
+      cb.type = "checkbox"; cb.id = "mat_" + m.id; cb.value = m.id;
+      const lab = document.createElement("label");
+      lab.htmlFor = cb.id;
+      lab.append(m.nombre);
+      const q = document.createElement("span");
+      q.className = "quedan";
+      q.textContent = m.restante == null ? "Lo que puedas traer" : `Faltan ${unidadTxt(m, m.restante)}`;
+      lab.appendChild(q);
+      li.append(cb, lab);
+
+      let sel = null;
+      if (m.restante != null && m.restante > 1) {
+        sel = document.createElement("select");
+        sel.setAttribute("aria-label", `Cantidad de ${m.nombre}`);
+        for (let n = 1; n <= m.restante; n++) sel.add(new Option(unidadTxt(m, n), n));
+        sel.hidden = true;
+        li.appendChild(sel);
+      }
+      const prev = elegidos.get(m.id);
+      if (prev !== undefined) {
+        cb.checked = true;
+        if (sel && prev) sel.value = Math.min(prev, m.restante);
+      }
+      const sync = () => { li.classList.toggle("elegido", cb.checked); if (sel) sel.hidden = !cb.checked; if (cb.checked) $("mat_error").textContent = ""; };
+      cb.addEventListener("change", sync);
+      sync();
+      ul.appendChild(li);
     }
   }
-  $("dona_alimento").addEventListener("change", syncDonaciones);
-  $("dona_material").addEventListener("change", syncDonaciones);
 
+  function leerElegidos() {
+    const map = new Map();
+    for (const li of $("lista_materiales").querySelectorAll(".item")) {
+      const cb = li.querySelector("input");
+      if (!cb.checked) continue;
+      const sel = li.querySelector("select");
+      map.set(Number(cb.value), sel ? Number(sel.value) : null);
+    }
+    return map;
+  }
+
+  // ---------- Validación ----------
   // Números chilenos (celular o fijo) tienen 9 dígitos: "9 1234 5678" -> "+56912345678"
   function normalizarTelefono(v) {
     let d = v.replace(/[^\d]/g, "");
@@ -316,28 +412,39 @@
 
   function validar() {
     const v = (id) => $(id).value.trim();
+    const elegidos = leerElegidos();
     const datos = {
-      nombre_apoderado: v("nombre_apoderado"),
-      nombre_hijo: v("nombre_hijo"),
-      telefono: normalizarTelefono($("telefono").value),
-      correo: v("correo") || null,
-      dona_alimento: $("dona_alimento").checked,
-      detalle_alimento: $("dona_alimento").checked ? (v("detalle_alimento") || null) : null,
-      dona_material: $("dona_material").checked,
-      detalle_material: $("dona_material").checked ? (v("detalle_material") || null) : null,
+      p_nombre_apoderado: v("nombre_apoderado"),
+      p_nombre_hijo: v("nombre_hijo"),
+      p_telefono: normalizarTelefono($("telefono").value),
+      p_correo: v("correo") || null,
+      p_aporte_dinero: $("aporte_dinero").checked,
+      p_aporte_materiales: $("aporte_materiales").checked,
+      p_materiales: $("aporte_materiales").checked
+        ? [...elegidos].map(([id, cantidad]) => cantidad == null ? { id } : { id, cantidad })
+        : [],
     };
     const errores = {
-      nombre_apoderado: datos.nombre_apoderado.length < 3 ? "Escribe tu nombre y apellido." : "",
-      nombre_hijo: datos.nombre_hijo.length < 2 ? "Escribe el nombre de tu hijo o hija." : "",
-      telefono: !datos.telefono ? "Revisa el teléfono. Ejemplo: +56 9 1234 5678." : "",
-      correo: datos.correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.correo) ? "Revisa el correo o déjalo en blanco." : "",
+      nombre_apoderado: datos.p_nombre_apoderado.length < 3 ? "Escribe tu nombre y apellido." : "",
+      nombre_hijo: datos.p_nombre_hijo.length < 2 ? "Escribe el nombre de tu hijo o hija." : "",
+      telefono: !datos.p_telefono ? "Revisa el teléfono. Ejemplo: +56 9 1234 5678." : "",
+      correo: datos.p_correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.p_correo) ? "Revisa el correo o déjalo en blanco." : "",
     };
     let primero = null;
     for (const [c, t] of Object.entries(errores)) { marcar(c, t); if (t && !primero) primero = c; }
     if (primero) { $(primero).focus(); return null; }
+
+    $("mat_error").textContent = "";
+    if (datos.p_aporte_materiales && cargado && materiales.length && !datos.p_materiales.length) {
+      $("mat_error").textContent = "Marca al menos un material, o desmarca la opción de materiales.";
+      $("lista_materiales").querySelector("input")?.focus();
+      return null;
+    }
+    if (datos.p_aporte_materiales && !datos.p_materiales.length) datos.p_aporte_materiales = false; // lista vacía o sin cargar
     return datos;
   }
 
+  // ---------- Envío ----------
   function hojitas() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const colores = ["#7cbf3a", "#ffc93c", "#d7263d", "#2f80c8", "#a6d65a"];
@@ -352,6 +459,18 @@
       document.body.appendChild(h);
       setTimeout(() => h.remove(), 3500);
     }
+  }
+
+  function pintarResumen(datos) {
+    const ul = $("resumen");
+    ul.replaceChildren();
+    const add = (t) => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); };
+    if (datos.p_aporte_dinero) add("Aporte en dinero");
+    for (const { id, cantidad } of datos.p_materiales) {
+      const m = materiales.find(x => x.id === id);
+      if (m) add(cantidad ? `${m.nombre}: ${unidadTxt(m, cantidad)}` : m.nombre);
+    }
+    ul.hidden = !ul.children.length;
   }
 
   form.addEventListener("submit", async (e) => {
@@ -369,16 +488,28 @@
     }
 
     btn.disabled = true; btn.textContent = "Enviando ficha…";
-    const { error } = await supabase.from("apoderados").insert(datos);
+    const { error } = await supabase.rpc("registrar_apoderado", datos);
     btn.disabled = false; btn.textContent = "Enviar ficha";
 
     if (error) {
       console.error(error);
-      estado.textContent = "No se pudo enviar la ficha. Revisa tu conexión e inténtalo otra vez.";
+      const msg = error.message || "";
+      if (msg.startsWith("MATERIAL_AGOTADO")) {
+        const nombre = msg.split(":").slice(1).join(":").trim();
+        await cargarMateriales();
+        estado.textContent = `Otra familia acaba de cubrir ${nombre || "un material"}. Actualizamos la lista: revisa tu elección y envía de nuevo.`;
+      } else {
+        estado.textContent = "No se pudo enviar la ficha. Revisa tu conexión e inténtalo otra vez.";
+      }
       estado.className = "estado mal";
       return;
     }
-    form.reset(); syncDonaciones();
+
+    pintarResumen(datos);
+    form.reset();
+    cargado = false; // la lista se vuelve a pedir si envían otra ficha
+    $("lista_materiales").replaceChildren();
+    syncOpciones();
     form.hidden = true;
     $("gracias").hidden = false;
     $("gracias").focus();

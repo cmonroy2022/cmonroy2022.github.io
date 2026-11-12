@@ -21,7 +21,15 @@ El formulario vive en https://cmonroy2022.github.io/apoderados/
 Cada push a `main` lo actualiza en 1–2 minutos.
 
 ## 4. Ver los registros
-Supabase → **Table Editor → apoderados**. Desde ahí puedes exportar a CSV.
+- **apoderados**: las fichas, con `aporte_dinero` y `aporte_materiales`.
+- **quien_trae_que**: qué material trae cada familia y cuánto.
+- Todo se ve en Supabase → **Table Editor** y se puede exportar a CSV.
+
+## 5. Cambiar la lista de materiales
+Supabase → Table Editor → **materiales**:
+- Agregar una fila: `nombre`, `cantidad` (vacío = sin límite), `unidad` (ej. "pliegos"), `orden`.
+- Sacar un material sin borrarlo: `activo = false`.
+- Un material desaparece del formulario cuando las familias completan su `cantidad`.
 
 ## Seguridad
 - El público solo puede **insertar**; nadie puede leer los datos con la key pública.
