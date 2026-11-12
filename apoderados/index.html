@@ -117,6 +117,13 @@
   .marca { font-weight: 400; font-size: .85rem; color: var(--gris); }
   .opcion input:checked + .ficha .marca { color: var(--pasto-hondo); font-weight: 700; }
 
+  /* Monto en dinero */
+  .monto { margin-top: 18px; }
+  .monto[hidden] { display: none; }
+  .pesos { position: relative; max-width: 260px; }
+  .pesos span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--gris); }
+  .pesos input { padding-left: 32px; font-weight: 700; font-size: 1.15rem; }
+
   /* Lista de materiales que faltan */
   .materiales { margin-top: 18px; }
   .materiales[hidden] { display: none; }
@@ -267,6 +274,14 @@
           </label>
         </div>
 
+        <div class="monto" id="bloque_dinero" hidden>
+          <label class="etq" for="monto_dinero">¿Cuánto puedes aportar?</label>
+          <div class="pesos"><span aria-hidden="true">$</span>
+            <input type="text" id="monto_dinero" inputmode="numeric" autocomplete="off" placeholder="5.000" aria-describedby="monto_ayuda"></div>
+          <p class="ayuda" id="monto_ayuda" style="margin-top:6px">En pesos chilenos.</p>
+          <div class="error" data-for="monto_dinero"></div>
+        </div>
+
         <div class="materiales" id="bloque_materiales" hidden>
           <h3>Materiales para el mural</h3>
           <p class="ayuda">Marca lo que vas a traer. Solo aparece lo que todavía falta.</p>
@@ -314,10 +329,20 @@
     for (const id of ["aporte_dinero", "aporte_materiales"]) {
       $(id).nextElementSibling.querySelector(".marca").textContent = $(id).checked ? "Elegido" : "Toca para elegir";
     }
+    $("bloque_dinero").hidden = !$("aporte_dinero").checked;
     $("bloque_materiales").hidden = !$("aporte_materiales").checked;
     if ($("aporte_materiales").checked && !cargado) cargarMateriales();
   }
-  $("aporte_dinero").addEventListener("change", syncOpciones);
+  $("aporte_dinero").addEventListener("change", () => { syncOpciones(); if ($("aporte_dinero").checked) $("monto_dinero").focus(); });
+
+  // Monto: solo dígitos, con separador de miles chileno (5.000)
+  const leerMonto = () => Number($("monto_dinero").value.replace(/\D/g, "")) || 0;
+  const pesos = (n) => "$" + n.toLocaleString("es-CL");
+  $("monto_dinero").addEventListener("input", () => {
+    const n = leerMonto();
+    $("monto_dinero").value = n ? n.toLocaleString("es-CL") : "";
+    if (n) marcar("monto_dinero", "");
+  });
   $("aporte_materiales").addEventListener("change", syncOpciones);
 
   // ---------- Lista de materiales ----------
@@ -420,6 +445,7 @@
       p_correo: v("correo") || null,
       p_aporte_dinero: $("aporte_dinero").checked,
       p_aporte_materiales: $("aporte_materiales").checked,
+      p_monto_dinero: $("aporte_dinero").checked ? leerMonto() : null,
       p_materiales: $("aporte_materiales").checked
         ? [...elegidos].map(([id, cantidad]) => cantidad == null ? { id } : { id, cantidad })
         : [],
@@ -429,6 +455,9 @@
       nombre_hijo: datos.p_nombre_hijo.length < 2 ? "Escribe el nombre de tu hijo o hija." : "",
       telefono: !datos.p_telefono ? "Revisa el teléfono. Ejemplo: +56 9 1234 5678." : "",
       correo: datos.p_correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(datos.p_correo) ? "Revisa el correo o déjalo en blanco." : "",
+      monto_dinero: datos.p_aporte_dinero && !(datos.p_monto_dinero >= 1)
+        ? "Escribe cuánto puedes aportar, o desmarca la opción de dinero."
+        : datos.p_monto_dinero > 10000000 ? "Revisa el monto." : "",
     };
     let primero = null;
     for (const [c, t] of Object.entries(errores)) { marcar(c, t); if (t && !primero) primero = c; }
@@ -465,7 +494,7 @@
     const ul = $("resumen");
     ul.replaceChildren();
     const add = (t) => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); };
-    if (datos.p_aporte_dinero) add("Aporte en dinero");
+    if (datos.p_aporte_dinero) add(`Aporte en dinero: ${pesos(datos.p_monto_dinero)}`);
     for (const { id, cantidad } of datos.p_materiales) {
       const m = materiales.find(x => x.id === id);
       if (m) add(cantidad ? `${m.nombre}: ${unidadTxt(m, cantidad)}` : m.nombre);

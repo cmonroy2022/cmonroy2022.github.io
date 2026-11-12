@@ -23,6 +23,7 @@ Cada push a `main` lo actualiza en 1–2 minutos.
 ## 4. Ver los registros
 - **apoderados**: las fichas, con `aporte_dinero` y `aporte_materiales`.
 - **quien_trae_que**: qué material trae cada familia y cuánto.
+- **resumen_dinero**: cuántas familias aportan dinero y el total en pesos.
 - Todo se ve en Supabase → **Table Editor** y se puede exportar a CSV.
 
 ## 5. Cambiar la lista de materiales

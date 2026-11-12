@@ -16,7 +16,8 @@ create table if not exists public.apoderados (
 
 alter table public.apoderados
   add column if not exists aporte_dinero     boolean not null default false,
-  add column if not exists aporte_materiales boolean not null default false;
+  add column if not exists aporte_materiales boolean not null default false,
+  add column if not exists monto_dinero      integer check (monto_dinero is null or monto_dinero between 1 and 10000000);
 
 -- Columnas de la versión anterior (alimento / material con texto libre).
 -- Si no tienen datos que quieras conservar, puedes borrarlas quitando los "--":
@@ -94,6 +95,8 @@ $$;
 
 -- Guarda la ficha y descuenta los materiales en una sola operación.
 -- Si otra familia tomó el material justo antes, falla con 'MATERIAL_AGOTADO:<nombre>' y no guarda nada.
+drop function if exists public.registrar_apoderado(text, text, text, text, boolean, boolean, jsonb);
+
 create or replace function public.registrar_apoderado(
   p_nombre_apoderado  text,
   p_nombre_hijo       text,
@@ -101,7 +104,8 @@ create or replace function public.registrar_apoderado(
   p_correo            text,
   p_aporte_dinero     boolean,
   p_aporte_materiales boolean,
-  p_materiales        jsonb default '[]'::jsonb   -- [{"id": 1, "cantidad": 2}, ...]
+  p_materiales        jsonb default '[]'::jsonb,  -- [{"id": 1, "cantidad": 2}, ...]
+  p_monto_dinero      integer default null        -- pesos chilenos
 ) returns bigint
 language plpgsql security definer set search_path = public as $$
 declare
@@ -114,13 +118,17 @@ begin
   if coalesce(jsonb_array_length(p_materiales), 0) > 30 then
     raise exception 'DEMASIADOS_MATERIALES';
   end if;
+  if p_aporte_dinero and coalesce(p_monto_dinero, 0) < 1 then
+    raise exception 'FALTA_MONTO';
+  end if;
   if p_aporte_materiales and coalesce(jsonb_array_length(p_materiales), 0) = 0 then
     raise exception 'FALTA_ELEGIR_MATERIALES';
   end if;
 
-  insert into apoderados (nombre_apoderado, nombre_hijo, telefono, correo, aporte_dinero, aporte_materiales)
+  insert into apoderados (nombre_apoderado, nombre_hijo, telefono, correo, aporte_dinero, aporte_materiales, monto_dinero)
   values (trim(p_nombre_apoderado), trim(p_nombre_hijo), p_telefono, nullif(trim(p_correo), ''),
-          coalesce(p_aporte_dinero, false), coalesce(p_aporte_materiales, false))
+          coalesce(p_aporte_dinero, false), coalesce(p_aporte_materiales, false),
+          case when p_aporte_dinero then p_monto_dinero end)
   returning id into v_id;
 
   if p_aporte_materiales then
@@ -151,9 +159,9 @@ end;
 $$;
 
 revoke all on function public.materiales_disponibles() from public;
-revoke all on function public.registrar_apoderado(text, text, text, text, boolean, boolean, jsonb) from public;
+revoke all on function public.registrar_apoderado(text, text, text, text, boolean, boolean, jsonb, integer) from public;
 grant execute on function public.materiales_disponibles() to anon;
-grant execute on function public.registrar_apoderado(text, text, text, text, boolean, boolean, jsonb) to anon;
+grant execute on function public.registrar_apoderado(text, text, text, text, boolean, boolean, jsonb, integer) to anon;
 
 -- =========================================================
 -- 5. Vista para el jardín: quién trae qué (solo visible en el panel de Supabase)
@@ -171,3 +179,10 @@ join apoderados ap on ap.id = a.apoderado_id
 order by m.orden, a.creado_en;
 
 revoke all on public.quien_trae_que from anon, authenticated;
+
+-- Total comprometido en dinero (solo visible en el panel de Supabase)
+create or replace view public.resumen_dinero as
+select count(*) as familias, coalesce(sum(monto_dinero), 0) as total_pesos
+from apoderados where aporte_dinero;
+
+revoke all on public.resumen_dinero from anon, authenticated;
